@@ -4,13 +4,12 @@ import io.pagratis.toggles.{RuntimeTestToggles, RuntimeToggles}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 
-import java.io.{File, FileNotFoundException}
+import java.io.FileNotFoundException
 
 class RuntimeTogglesTest extends AnyFunSuite with Matchers {
   test("honor percentages") {
     val toggles = RuntimeToggles
-      .builder()
-      .withConfigFilePath("testData/toggles.yaml")
+      .builder("testData/toggles.yaml")
       .build()
     toggles.load()
     run1000Times(toggles, "alwaysOn") mustBe 1000
@@ -23,8 +22,7 @@ class RuntimeTogglesTest extends AnyFunSuite with Matchers {
   test("handle a missing file") {
     intercept[FileNotFoundException] {
       RuntimeToggles
-        .builder()
-        .withConfigFilePath("fileDoesNotExistLetsFail")
+        .builder("fileDoesNotExistLetsFail")
         .build()
         .load()
     }

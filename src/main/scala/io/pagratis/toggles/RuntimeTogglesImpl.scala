@@ -4,7 +4,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 
 import java.io.{File, FileNotFoundException}
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
+import java.util.concurrent.{ConcurrentHashMap, Executors}
 import scala.collection.concurrent
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.{ConcurrentMapHasAsScala, IteratorHasAsScala}
@@ -16,6 +16,17 @@ class RuntimeTogglesImpl private[toggles](configFile: File, yamlMapper: YAMLMapp
   private val loading = new AtomicBoolean(false)
   private val map: concurrent.Map[String, Double] = new ConcurrentHashMap[String, Double]().asScala
   private val scheduler = Executors.newSingleThreadScheduledExecutor()
+
+  override def isAvailable(toggleName: String): Boolean = {
+    if (!loaded.get()) load()
+
+    map.getOrElse(toggleName, 0.0) match {
+      case 1.0 => true
+      case 0.0 => false
+      case percentage =>
+        Math.random() <= percentage
+    }
+  }
 
   def load(): Unit = {
     loaded synchronized {
@@ -31,19 +42,8 @@ class RuntimeTogglesImpl private[toggles](configFile: File, yamlMapper: YAMLMapp
     }
   }
 
-  override def isAvailable(toggleName: String): Boolean = {
-    if (!loaded.get()) load()
-
-    map.getOrElse(toggleName, 0.0) match {
-      case 1.0 => true
-      case 0.0 => false
-      case percentage =>
-        Math.random() <= percentage
-    }
-  }
-
-  private def updateValues(): Unit = {
-    if(!configFile.exists()) throw new FileNotFoundException(s"${configFile.getAbsolutePath} was not found")
+  def updateValues(): Unit = {
+    if (!configFile.exists()) throw new FileNotFoundException(s"${configFile.getAbsolutePath} was not found")
 
     val yamlObject = yamlMapper.readTree(configFile)
     yamlObject.fields().asScala.foreach { entry =>

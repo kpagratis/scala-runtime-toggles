@@ -1,9 +1,8 @@
 package io.pagratis.toggles
 
 object RuntimeToggles {
-  def builder() = RuntimeTogglesBuilder()
+  def builder(configFilePath: String): RuntimeTogglesBuilder = RuntimeTogglesBuilder(configFilePath)
 }
-
 
 
 trait RuntimeToggles extends AutoCloseable {
