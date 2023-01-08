@@ -9,12 +9,6 @@ object RuntimeToggles {
 
   def apply(configFile: File, yamlMapper: YAMLMapper): RuntimeTogglesImpl =
     new RuntimeTogglesImpl(configFile, yamlMapper)
-
-  def main(args: Array[String]): Unit = {
-    val toggles = RuntimeToggles(new File("testData/toggles.yaml"))
-    toggles.isAvailable("adf")
-    toggles.close()
-  }
 }
 
 
