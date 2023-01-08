@@ -8,7 +8,10 @@ import java.io.{File, FileNotFoundException}
 
 class RuntimeTogglesTest extends AnyFunSuite with Matchers {
   test("honor percentages") {
-    val toggles = RuntimeToggles(new File("testData/toggles.yaml"))
+    val toggles = RuntimeToggles
+      .builder()
+      .withConfigFilePath("testData/toggles.yaml")
+      .build()
     toggles.load()
     run1000Times(toggles, "alwaysOn") mustBe 1000
     run1000Times(toggles, "alwaysOff") mustBe 0
@@ -19,7 +22,11 @@ class RuntimeTogglesTest extends AnyFunSuite with Matchers {
 
   test("handle a missing file") {
     intercept[FileNotFoundException] {
-      RuntimeToggles(new File("fileDoesNotExistLetsFail")).load()
+      RuntimeToggles
+        .builder()
+        .withConfigFilePath("fileDoesNotExistLetsFail")
+        .build()
+        .load()
     }
   }
 

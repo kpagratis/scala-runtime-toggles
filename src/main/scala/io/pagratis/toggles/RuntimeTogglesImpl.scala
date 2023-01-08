@@ -6,9 +6,10 @@ import java.io.{File, FileNotFoundException}
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
 import scala.collection.concurrent
+import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.{ConcurrentMapHasAsScala, IteratorHasAsScala}
 
-class RuntimeTogglesImpl private[toggles](configFile: File, yamlMapper: YAMLMapper)
+class RuntimeTogglesImpl private[toggles](configFile: File, yamlMapper: YAMLMapper, updateDuration: Duration)
   extends RuntimeToggles with AutoCloseable {
 
   private val loaded = new AtomicBoolean(false)
@@ -22,9 +23,9 @@ class RuntimeTogglesImpl private[toggles](configFile: File, yamlMapper: YAMLMapp
         updateValues()
         scheduler.scheduleAtFixedRate(
           () => updateValues(),
-          10,
-          10,
-          TimeUnit.SECONDS)
+          updateDuration.length,
+          updateDuration.length,
+          updateDuration.unit)
         loaded.set(true)
       }
     }
